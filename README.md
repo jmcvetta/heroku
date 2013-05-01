@@ -6,7 +6,7 @@ Golang client for Heroku API
 
 # Documentation
 
-See GoDoc for [automatic API docs](http://godoc.org/github.com/jmcvetta/heroku).
+See GoDoc for [automatically generated documentation](http://godoc.org/github.com/jmcvetta/heroku).
 
 # Status
 
