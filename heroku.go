@@ -15,8 +15,7 @@ var (
 	BadResponse = errors.New("Bad response from server")
 )
 
-// An Account is a Heroku user account
-type Account struct {
+type Heroku struct {
 	ApiKey string
 }
 
@@ -35,19 +34,19 @@ type App struct {
 	Workers           int
 }
 
-func (a *Account) userinfo() *url.Userinfo {
-	return url.UserPassword("", a.ApiKey)
+func (h *Heroku) userinfo() *url.Userinfo {
+	return url.UserPassword("", h.ApiKey)
 }
 
 // Apps queries Heroku for all applications owned by account, and returns a
 // map keyed with app IDs.
-func (a *Account) Apps() (map[int64]*App, error) {
+func (h *Heroku) Apps() (map[int64]*App, error) {
 	url := HerokuApi + "/apps"
 	res := []*App{}
 	rr := restclient.RequestResponse{
 		Url:      url,
 		Method:   "GET",
-		Userinfo: a.userinfo(),
+		Userinfo: h.userinfo(),
 		Result:   &res,
 	}
 	status, err := restclient.Do(&rr)
@@ -58,8 +57,8 @@ func (a *Account) Apps() (map[int64]*App, error) {
 		return nil, BadResponse
 	}
 	m := make(map[int64]*App, len(res))
-	for _, anApp := range res {
-		m[anApp.Id] = anApp
+	for _, a := range res {
+		m[a.Id] = a
 	}
 	return m, nil
 }

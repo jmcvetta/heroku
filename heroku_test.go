@@ -15,14 +15,14 @@ import (
 	"time"
 )
 
-func setup(t *testing.T) *Account {
+func setup(t *testing.T) *Heroku {
 	key := env.StringDefault("HEROKU_API_KEY", "")
 	if key == "" {
 		t.Fatal("HEROKU_API_KEY environment variable not set")
 	}
-	a := new(Account)
-	a.ApiKey = key
-	return a
+	h := new(Heroku)
+	h.ApiKey = key
+	return h
 }
 
 var testApps = []App{
@@ -60,18 +60,18 @@ func HandleGetApps(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestGetApps(t *testing.T) {
-	a := setup(t)
+	h := setup(t)
 	srv := httptest.NewServer(http.HandlerFunc(HandleGetApps))
 	defer srv.Close()
-	m, err := a.Apps()
+	m, err := h.Apps()
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, app0 := range m {
-		app1, ok := m[app0.Id]
+	for _, a0 := range m {
+		a1, ok := m[a0.Id]
 		if !ok {
-			t.Error("Apps() failed to return app ", app0.Id)
+			t.Error("Apps() failed to return app ", a0.Id)
 		}
-		assert.T(t, reflect.DeepEqual(app0, app1))
+		assert.T(t, reflect.DeepEqual(a0, a1))
 	}
 }
