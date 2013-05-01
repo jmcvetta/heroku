@@ -6,11 +6,11 @@ package heroku
 
 import (
 	"encoding/json"
+	"github.com/bmizerany/assert"
 	"github.com/darkhelmet/env"
-	"github.com/kr/pretty"
-	"log"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -25,8 +25,8 @@ func setup(t *testing.T) *Account {
 	return a
 }
 
-func HandleGetApps(w http.ResponseWriter, r *http.Request) {
-	a0 := App{
+var testApps = []App{
+	App{
 		Id:                1,
 		Name:              "foo",
 		CreateStatus:      time.Now().String(),
@@ -38,8 +38,8 @@ func HandleGetApps(w http.ResponseWriter, r *http.Request) {
 		RepoSize:          1777664,
 		Dynos:             3,
 		Workers:           1,
-	}
-	a1 := App{
+	},
+	App{
 		Id:                2,
 		Name:              "bar",
 		CreateStatus:      time.Now().String(),
@@ -51,21 +51,27 @@ func HandleGetApps(w http.ResponseWriter, r *http.Request) {
 		RepoSize:          5678,
 		Dynos:             1,
 		Workers:           0,
-	}
+	},
+}
+
+func HandleGetApps(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
-	resp := []App{a0, a1}
-	enc.Encode(&resp)
+	enc.Encode(&testApps)
 }
 
 func TestGetApps(t *testing.T) {
 	a := setup(t)
 	srv := httptest.NewServer(http.HandlerFunc(HandleGetApps))
 	defer srv.Close()
-	apps, err := a.Apps()
+	m, err := a.Apps()
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, app := range apps {
-		log.Println(pretty.Sprintf("%# v", app))
+	for _, app0 := range m {
+		app1, ok := m[app0.Id]
+		if !ok {
+			t.Error("Apps() failed to return app ", app0.Id)
+		}
+		assert.T(t, reflect.DeepEqual(app0, app1))
 	}
 }
