@@ -13,11 +13,11 @@ import (
 	"net/http"
 	// "net/http/httptest"
 	// "reflect"
+	"fmt"
+	"log"
+	"strings"
 	"testing"
 	"time"
-	"log"
-	"fmt"
-	"strings"
 )
 
 func setup(t *testing.T) *Heroku {
@@ -68,7 +68,6 @@ func HandleGetApps(w http.ResponseWriter, r *http.Request) {
 	enc.Encode(&testApps)
 }
 
-
 func HandleNewApp(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
@@ -110,12 +109,12 @@ func TestGetApps(t *testing.T) {
 */
 
 func appName(t *testing.T) string {
-	rnd, err := randutil.AlphaString(17)
+	rnd, err := randutil.AlphaString(25)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rnd = strings.ToLower(rnd)
-	return "go-heroku-" + rnd
+	return "test-" + rnd
 }
 
 func cleanup(t *testing.T, h *Heroku) {
@@ -136,6 +135,18 @@ func TestNewApp(t *testing.T) {
 	defer cleanup(t, h)
 	a0name := appName(t)
 	a0, err := h.NewApp(a0name, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, a0name, a0.Name)
+}
+
+func TestGetApp(t *testing.T) {
+	h := setup(t)
+	defer cleanup(t, h)
+	a0name := appName(t)
+	h.NewApp(a0name, "")
+	a0, err := h.App(a0name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,3 +188,17 @@ func TestGetApps(t *testing.T) {
 	}
 }
 
+func TestMaintenanceMode(t *testing.T) {
+	h := setup(t)
+	defer cleanup(t, h)
+	a0name := appName(t)
+	a0, _ := h.NewApp(a0name, "")
+	err := h.MaintenanceMode(a0.Name, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = h.MaintenanceMode(a0.Name, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+}

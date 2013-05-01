@@ -7,11 +7,11 @@ package heroku
 import (
 	"errors"
 	"github.com/jmcvetta/restclient"
-	"net/url"
 	"log"
+	"net/url"
 )
 
-const HerokuApi   = "https://api.heroku.com"
+const HerokuApi = "https://api.heroku.com"
 
 var (
 	BadResponse = errors.New("Bad response from server")
@@ -19,17 +19,17 @@ var (
 
 func NewHeroku(apiKey string) *Heroku {
 	h := Heroku{
-		ApiKey: apiKey,
+		ApiKey:  apiKey,
 		ApiHref: HerokuApi,
-		rc: restclient.New(),
+		rc:      restclient.New(),
 	}
 	return &h
 }
 
 type Heroku struct {
-	ApiKey string
+	ApiKey  string
 	ApiHref string
-	rc *restclient.Client
+	rc      *restclient.Client
 }
 
 // An App is a Heroku application.
@@ -55,8 +55,7 @@ func (h *Heroku) userinfo() *url.Userinfo {
 	return url.UserPassword("", h.ApiKey)
 }
 
-// Apps queries Heroku for all applications owned by account, and returns a
-// map keyed with application names.
+// Apps lists all applications, returning a map keyed with app names.
 func (h *Heroku) Apps() (map[string]*App, error) {
 	url := h.ApiHref + "/apps"
 	res := []*App{}
@@ -66,7 +65,7 @@ func (h *Heroku) Apps() (map[string]*App, error) {
 		Method:   "GET",
 		Userinfo: h.userinfo(),
 		Result:   &res,
-		Error: e,
+		Error:    e,
 	}
 	status, err := h.rc.Do(&rr)
 	if err != nil {
@@ -82,6 +81,7 @@ func (h *Heroku) Apps() (map[string]*App, error) {
 	return m, nil
 }
 
+// NewApp creates a new application.
 func (h *Heroku) NewApp(name, stack string) (*App, error) {
 	url := h.ApiHref + "/apps"
 	a := new(App)
@@ -95,12 +95,12 @@ func (h *Heroku) NewApp(name, stack string) (*App, error) {
 	payload := &mapApp{m}
 	e := new(interface{})
 	rr := restclient.RequestResponse{
-		Url: url,
-		Method: "POST",
+		Url:      url,
+		Method:   "POST",
 		Userinfo: h.userinfo(),
-		Result: a,
-		Data: payload,
-		Error: e,
+		Result:   a,
+		Data:     payload,
+		Error:    e,
 	}
 	status, err := h.rc.Do(&rr)
 	if err != nil {
@@ -114,16 +114,15 @@ func (h *Heroku) NewApp(name, stack string) (*App, error) {
 	return a, nil
 }
 
-
-// DestroyApp deletes an application from Heroku.
+// DestroyApp deletes an application.
 func (h *Heroku) DestroyApp(name string) error {
 	url := h.ApiHref + "/apps/" + name
 	e := new(interface{})
 	rr := restclient.RequestResponse{
-		Url: url,
-		Method: "DELETE",
+		Url:      url,
+		Method:   "DELETE",
 		Userinfo: h.userinfo(),
-		Error: e,
+		Error:    e,
 	}
 	status, err := h.rc.Do(&rr)
 	if err != nil {
@@ -134,5 +133,56 @@ func (h *Heroku) DestroyApp(name string) error {
 		log.Println(*e)
 		return BadResponse
 	}
-	return nil // Successful delete
+	return nil
+}
+
+// App gets information about an application.
+func (h *Heroku) App(name string) (*App, error) {
+	url := h.ApiHref + "/apps/" + name
+	e := new(interface{})
+	a := new(App)
+	rr := restclient.RequestResponse{
+		Url:      url,
+		Method:   "GET",
+		Userinfo: h.userinfo(),
+		Error:    e,
+		Result:   a,
+	}
+	status, err := h.rc.Do(&rr)
+	if err != nil {
+		return nil, err
+	}
+	if status != 200 {
+		log.Println(status)
+		log.Println(*e)
+		return nil, BadResponse
+	}
+	return a, nil
+
+}
+
+// MaintenanceMode toggles maintenance mode on an application.
+func (h *Heroku) MaintenanceMode(name string, modeOn bool) error {
+	url := h.ApiHref + "/apps/" + name + "/server/maintenance"
+	e := new(interface{})
+	payload := map[string]interface{}{}
+	payload["app"] = name
+	payload["maintenance_mode"] = modeOn
+	rr := restclient.RequestResponse{
+		Url:      url,
+		Method:   "POST",
+		Userinfo: h.userinfo(),
+		Error:    e,
+		Data:     payload,
+	}
+	status, err := h.rc.Do(&rr)
+	if err != nil {
+		return err
+	}
+	if status != 200 {
+		log.Println(status)
+		log.Println(*e)
+		return BadResponse
+	}
+	return nil
 }
