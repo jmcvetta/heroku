@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/jmcvetta/restclient"
 	"net/url"
+	"log"
 )
 
 const HerokuApi   = "https://api.heroku.com"
@@ -46,16 +47,17 @@ type App struct {
 	Workers           int
 }
 
-type mss map[string]string
-
+type mapApp struct {
+	App map[string]string `json:"app"`
+}
 
 func (h *Heroku) userinfo() *url.Userinfo {
 	return url.UserPassword("", h.ApiKey)
 }
 
 // Apps queries Heroku for all applications owned by account, and returns a
-// map keyed with app IDs.
-func (h *Heroku) Apps() (map[int64]*App, error) {
+// map keyed with application names.
+func (h *Heroku) Apps() (map[string]*App, error) {
 	url := h.ApiHref + "/apps"
 	res := []*App{}
 	e := new(interface{})
@@ -73,9 +75,9 @@ func (h *Heroku) Apps() (map[int64]*App, error) {
 	if status != 200 {
 		return nil, BadResponse
 	}
-	m := make(map[int64]*App, len(res))
+	m := make(map[string]*App, len(res))
 	for _, a := range res {
-		m[a.Id] = a
+		m[a.Name] = a
 	}
 	return m, nil
 }
@@ -83,11 +85,14 @@ func (h *Heroku) Apps() (map[int64]*App, error) {
 func (h *Heroku) NewApp(name, stack string) (*App, error) {
 	url := h.ApiHref + "/apps"
 	a := new(App)
-	payload := struct {
-		App mss `json:"app"`
-	}{
-		App: mss{"name": name, "stack": stack,},
+	m := make(map[string]string)
+	if name != "" {
+		m["name"] = name
 	}
+	if stack != "" {
+		m["stack"] = stack
+	}
+	payload := &mapApp{m}
 	e := new(interface{})
 	rr := restclient.RequestResponse{
 		Url: url,
@@ -102,7 +107,32 @@ func (h *Heroku) NewApp(name, stack string) (*App, error) {
 		return nil, err
 	}
 	if status != 202 {
+		log.Println(status)
+		log.Println(*e)
 		return nil, BadResponse
 	}
 	return a, nil
+}
+
+
+// DestroyApp deletes an application from Heroku.
+func (h *Heroku) DestroyApp(name string) error {
+	url := h.ApiHref + "/apps/" + name
+	e := new(interface{})
+	rr := restclient.RequestResponse{
+		Url: url,
+		Method: "DELETE",
+		Userinfo: h.userinfo(),
+		Error: e,
+	}
+	status, err := h.rc.Do(&rr)
+	if err != nil {
+		return err
+	}
+	if status != 200 {
+		log.Println(status)
+		log.Println(*e)
+		return BadResponse
+	}
+	return nil // Successful delete
 }

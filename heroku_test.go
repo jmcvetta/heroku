@@ -7,25 +7,30 @@ package heroku
 import (
 	"encoding/json"
 	"github.com/bmizerany/assert"
+	// "github.com/kr/pretty"
 	"github.com/darkhelmet/env"
+	"github.com/jmcvetta/randutil"
 	"net/http"
-	"net/http/httptest"
-	"reflect"
+	// "net/http/httptest"
+	// "reflect"
 	"testing"
 	"time"
 	"log"
+	"fmt"
+	"strings"
 )
 
-func setup(t *testing.T, s *httptest.Server) *Heroku {
+func setup(t *testing.T) *Heroku {
 	log.SetFlags(log.Lshortfile)
 	key := env.StringDefault("HEROKU_API_KEY", "")
 	if key == "" {
 		t.Fatal("HEROKU_API_KEY environment variable not set")
 	}
 	h := NewHeroku(key)
-	addr := "http://" + s.Listener.Addr().String()
-	h.ApiHref = addr
-	h.rc.UnsafeBasicAuth = true
+	// addr := "http://" + s.Listener.Addr().String()
+	// h.ApiHref = addr
+	// h.rc.UnsafeBasicAuth = true
+	h.rc.LogRequestResponse = false
 	return h
 }
 
@@ -65,12 +70,27 @@ func HandleGetApps(w http.ResponseWriter, r *http.Request) {
 
 
 func HandleNewApp(w http.ResponseWriter, r *http.Request) {
+	dec := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+	a0 := App{}
+	dec.Decode(&a0)
+	if a0.Name != "foo" {
+		msg := fmt.Sprintf("Expected name='foo', got '%s'.", a0.Name)
+		http.Error(w, msg, http.StatusBadRequest)
+		return
+	}
+	if a0.Stack != "bar" {
+		msg := fmt.Sprintf("Expected stack='bar', got '%s'.", a0.Stack)
+		http.Error(w, msg, http.StatusBadRequest)
+		return
+	}
 	enc := json.NewEncoder(w)
-	a := testApps[0]
-	enc.Encode(&a)
+	a1 := testApps[0]
+	enc.Encode(&a1)
 	w.WriteHeader(http.StatusAccepted)
 }
 
+/*
 func TestGetApps(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(HandleGetApps))
 	defer srv.Close()
@@ -87,9 +107,73 @@ func TestGetApps(t *testing.T) {
 		assert.T(t, reflect.DeepEqual(a0, a1))
 	}
 }
+*/
+
+func appName(t *testing.T) string {
+	rnd, err := randutil.AlphaString(17)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rnd = strings.ToLower(rnd)
+	return "go-heroku-" + rnd
+}
+
+func cleanup(t *testing.T, h *Heroku) {
+	m, err := h.Apps()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name := range m {
+		err = h.DestroyApp(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
 
 func TestNewApp(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(HandleNewApp))
-	defer srv.Close()
-	// h := setup(t, srv)
+	h := setup(t)
+	defer cleanup(t, h)
+	a0name := appName(t)
+	a0, err := h.NewApp(a0name, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, a0name, a0.Name)
 }
+
+func TestDestroyApp(t *testing.T) {
+	h := setup(t)
+	defer cleanup(t, h)
+	a0name := appName(t)
+	a0, _ := h.NewApp(a0name, "")
+	err := h.DestroyApp(a0.Name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, _ := h.Apps()
+	_, ok := m[a0name]
+	if ok {
+		t.Error("Failed to delete app ", a0name)
+	}
+}
+
+func TestGetApps(t *testing.T) {
+	h := setup(t)
+	defer cleanup(t, h)
+	a0name := appName(t)
+	a1name := appName(t)
+	h.NewApp(a0name, "")
+	h.NewApp(a1name, "")
+	m, err := h.Apps()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{a0name, a1name} {
+		_, ok := m[name]
+		if !ok {
+			t.Error("Could not retrieve app ", name)
+		}
+	}
+}
+
