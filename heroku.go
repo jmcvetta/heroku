@@ -39,15 +39,16 @@ func (a *Account) userinfo() *url.Userinfo {
 	return url.UserPassword("", a.ApiKey)
 }
 
-// Apps queries Heroku for a list of all applications owned by account.
-func (a *Account) Apps() ([]*App, error) {
+// Apps queries Heroku for all applications owned by account, and returns a
+// map keyed with app IDs.
+func (a *Account) Apps() (map[int64]*App, error) {
 	url := HerokuApi + "/apps"
-	res := new([]*App)
+	res := []*App{}
 	rr := restclient.RequestResponse{
 		Url:      url,
 		Method:   "GET",
 		Userinfo: a.userinfo(),
-		Result:   res,
+		Result:   &res,
 	}
 	status, err := restclient.Do(&rr)
 	if err != nil {
@@ -56,5 +57,9 @@ func (a *Account) Apps() ([]*App, error) {
 	if status != 200 {
 		return nil, BadResponse
 	}
-	return *res, nil
+	m := make(map[int64]*App, len(res))
+	for _, anApp := range res {
+		m[anApp.Id] = anApp
+	}
+	return m, nil
 }
