@@ -10,9 +10,10 @@ import (
 	"net/url"
 )
 
-const HerokuApi = "https://api.heroku.com"
-
-var BadResponse = errors.New("Bad response from server")
+var (
+	HerokuApi   = "https://api.heroku.com"
+	BadResponse = errors.New("Bad response from server")
+)
 
 // An Account is a Heroku user account
 type Account struct {
