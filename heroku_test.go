@@ -21,10 +21,7 @@ func setup(t *testing.T) *Heroku {
 		t.Fatal("HEROKU_API_KEY environment variable not set")
 	}
 	h := NewHeroku(key)
-	// addr := "http://" + s.Listener.Addr().String()
-	// h.ApiHref = addr
-	// h.rc.UnsafeBasicAuth = true
-	h.rc.LogRequestResponse = false
+	h.rc.Log = false
 	return h
 }
 
@@ -57,12 +54,24 @@ func cleanup(t *testing.T, h *Heroku) {
 func TestNewApp(t *testing.T) {
 	h := setup(t)
 	defer cleanup(t, h)
+	//
+	// Without stack
+	//
 	a0name := appName(t)
 	a0, err := h.NewApp(a0name, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, a0name, a0.Name)
+	//
+	// Cedar stack
+	//
+	a1name := appName(t)
+	a1, err := h.NewApp(a1name, "cedar")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, a1name, a1.Name)
 	//
 	// Duplicate name should cause error
 	//
