@@ -5,19 +5,13 @@
 package heroku
 
 import (
-	"encoding/json"
 	"github.com/bmizerany/assert"
-	// "github.com/kr/pretty"
 	"github.com/darkhelmet/env"
 	"github.com/jmcvetta/randutil"
-	"net/http"
-	// "net/http/httptest"
-	// "reflect"
-	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"testing"
-	"time"
 )
 
 func setup(t *testing.T) *Heroku {
@@ -34,79 +28,9 @@ func setup(t *testing.T) *Heroku {
 	return h
 }
 
-var testApps = []*App{
-	&App{
-		Id:                1,
-		Name:              "foo",
-		CreateStatus:      time.Now().String(),
-		CreatedAt:         time.Now().String(),
-		Stack:             "cedar",
-		RequestedStack:    "",
-		RepoMigrateStatus: "complete",
-		SlugSize:          2412544,
-		RepoSize:          1777664,
-		Dynos:             3,
-		Workers:           1,
-	},
-	&App{
-		Id:                2,
-		Name:              "bar",
-		CreateStatus:      time.Now().String(),
-		CreatedAt:         time.Now().String(),
-		Stack:             "cedar",
-		RequestedStack:    "",
-		RepoMigrateStatus: "complete",
-		SlugSize:          1234,
-		RepoSize:          5678,
-		Dynos:             1,
-		Workers:           0,
-	},
+func BadResponder(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "", 999)
 }
-
-func HandleGetApps(w http.ResponseWriter, r *http.Request) {
-	enc := json.NewEncoder(w)
-	enc.Encode(&testApps)
-}
-
-func HandleNewApp(w http.ResponseWriter, r *http.Request) {
-	dec := json.NewDecoder(r.Body)
-	defer r.Body.Close()
-	a0 := App{}
-	dec.Decode(&a0)
-	if a0.Name != "foo" {
-		msg := fmt.Sprintf("Expected name='foo', got '%s'.", a0.Name)
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	}
-	if a0.Stack != "bar" {
-		msg := fmt.Sprintf("Expected stack='bar', got '%s'.", a0.Stack)
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	}
-	enc := json.NewEncoder(w)
-	a1 := testApps[0]
-	enc.Encode(&a1)
-	w.WriteHeader(http.StatusAccepted)
-}
-
-/*
-func TestGetApps(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(HandleGetApps))
-	defer srv.Close()
-	h := setup(t, srv)
-	m, err := h.Apps()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, a0 := range testApps {
-		a1, ok := m[a0.Id]
-		if !ok {
-			t.Fatal("Apps() failed to return app ", a0.Id)
-		}
-		assert.T(t, reflect.DeepEqual(a0, a1))
-	}
-}
-*/
 
 func appName(t *testing.T) string {
 	rnd, err := randutil.AlphaString(25)
@@ -139,6 +63,11 @@ func TestNewApp(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, a0name, a0.Name)
+	//
+	// Duplicate name should cause error
+	//
+	_, err = h.NewApp(a0name, "")
+	assert.NotEqual(t, nil, err)
 }
 
 func TestGetApp(t *testing.T) {

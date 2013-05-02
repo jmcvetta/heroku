@@ -109,6 +109,8 @@ func (h *Heroku) NewApp(name, stack string) (*App, error) {
 	if status != 202 {
 		log.Println(status)
 		log.Println(*e)
+		log.Println("name: ", name)
+		log.Println("stack: ", stack)
 		return nil, BadResponse
 	}
 	return a, nil
