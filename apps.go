@@ -170,6 +170,14 @@ func (a *App) InstallAddon(addon string) (*AddonStatus, error) {
 	return a.h.InstallAddon(a.Name, addon)
 }
 
+// Addons lists the addons with which this app is provisioned.
 func (a *App) Addons() ([]*Addon, error) {
 	return a.h.AppAddons(a.Name)
 }
+
+/*
+// UpgradeAddon changes the plan type of an installed addon.
+func (a *App) UpgradeAddon(addon string) (*AddonStatus, error) {
+	return a.h.UpgradeAddon(a.Name, addon)
+}
+*/

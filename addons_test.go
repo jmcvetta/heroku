@@ -11,6 +11,7 @@ import (
 )
 
 const pgFree = "heroku-postgresql:dev"
+const pgBasic = "heroku-postgresql:basic"
 
 func TestAddons(t *testing.T) {
 	h := setup(t)
@@ -49,3 +50,26 @@ func TestAppAddons(t *testing.T) {
 	assert.Equal(t, 1, len(addons))
 	assert.Equal(t, pgFree, addons[0].Name)
 }
+
+/*
+func TestUpgradeAddon(t *testing.T) {
+	h := setup(t)
+	defer cleanup(t, h)
+	a, _ := h.NewApp("", "")
+	aStat, _ := a.InstallAddon(pgFree)
+	assert.Equal(t, "free", aStat.Price)
+	// Sleep while provisioning occurs.
+	dur, _ := time.ParseDuration("2s")
+	time.Sleep(dur)
+	addons, _ := a.Addons()
+	prettyPrint(addons)
+	aStat, err := a.UpgradeAddon(pgBasic)
+	// aStat, err := a.InstallAddon(pgBasic)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	prettyPrint(aStat)
+	// assert.NotEqual(t, "free", aStat.Price)
+}
+*/
