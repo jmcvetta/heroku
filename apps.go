@@ -22,6 +22,7 @@ type App struct {
 	RepoSize          int    `json:"repo_size"`
 	Dynos             int
 	Workers           int
+	h                 *Heroku
 }
 
 type mapApp struct {
@@ -86,12 +87,13 @@ func (h *Heroku) NewApp(name, stack string) (*App, error) {
 		log.Println("stack: ", stack)
 		return nil, BadResponse
 	}
+	a.h = h
 	return a, nil
 }
 
 // DestroyApp deletes an application.
-func (h *Heroku) DestroyApp(name string) error {
-	url := h.ApiHref + "/apps/" + name
+func (h *Heroku) DestroyApp(appName string) error {
+	url := h.ApiHref + "/apps/" + appName
 	e := new(interface{})
 	rr := restclient.RequestResponse{
 		Url:      url,
@@ -112,8 +114,8 @@ func (h *Heroku) DestroyApp(name string) error {
 }
 
 // App gets information about an application.
-func (h *Heroku) App(name string) (*App, error) {
-	url := h.ApiHref + "/apps/" + name
+func (h *Heroku) App(appName string) (*App, error) {
+	url := h.ApiHref + "/apps/" + appName
 	e := new(interface{})
 	a := new(App)
 	rr := restclient.RequestResponse{
@@ -132,16 +134,17 @@ func (h *Heroku) App(name string) (*App, error) {
 		log.Println(*e)
 		return nil, BadResponse
 	}
+	a.h = h
 	return a, nil
 
 }
 
 // MaintenanceMode toggles maintenance mode on an application.
-func (h *Heroku) MaintenanceMode(name string, modeOn bool) error {
-	url := h.ApiHref + "/apps/" + name + "/server/maintenance"
+func (h *Heroku) MaintenanceMode(appName string, modeOn bool) error {
+	url := h.ApiHref + "/apps/" + appName + "/server/maintenance"
 	e := new(interface{})
 	payload := map[string]interface{}{}
-	payload["app"] = name
+	payload["app"] = appName
 	payload["maintenance_mode"] = modeOn
 	rr := restclient.RequestResponse{
 		Url:      url,
@@ -160,4 +163,13 @@ func (h *Heroku) MaintenanceMode(name string, modeOn bool) error {
 		return BadResponse
 	}
 	return nil
+}
+
+// InstallAddon provisions this application with an addon.
+func (a *App) InstallAddon(addon string) (*AddonStatus, error) {
+	return a.h.InstallAddon(a.Name, addon)
+}
+
+func (a *App) Addons() ([]*Addon, error) {
+	return a.h.AppAddons(a.Name)
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/jmcvetta/restclient"
 	"log"
 	"net/url"
-	"reflect"
 )
 
 const HerokuApi = "https://api.heroku.com"
