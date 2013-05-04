@@ -10,6 +10,9 @@ import (
 	"github.com/jmcvetta/restclient"
 	"log"
 	"net/url"
+	"path/filepath"
+	"runtime"
+	"strconv"
 )
 
 const HerokuApi = "https://api.heroku.com"
@@ -17,6 +20,11 @@ const HerokuApi = "https://api.heroku.com"
 var (
 	BadResponse = errors.New("Bad response from server")
 )
+
+type HerokuError struct {
+	Id    string
+	Error string
+}
 
 func NewHeroku(apiKey string) *Heroku {
 	h := Heroku{
@@ -38,9 +46,17 @@ func (h *Heroku) userinfo() *url.Userinfo {
 }
 
 func prettyPrint(v interface{}) {
+	_, file, line, ok := runtime.Caller(1)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	lineNo := strconv.Itoa(line)
+	file = filepath.Base(file)
 	b, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Println("\n" + string(b))
+	s := file + ":" + lineNo + ": \n" + string(b) + "\n"
+	println(s)
 }
