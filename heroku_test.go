@@ -49,4 +49,3 @@ func cleanup(t *testing.T, h *Heroku) {
 		}
 	}
 }
-

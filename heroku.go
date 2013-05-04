@@ -5,9 +5,12 @@
 package heroku
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/jmcvetta/restclient"
+	"log"
 	"net/url"
+	"reflect"
 )
 
 const HerokuApi = "https://api.heroku.com"
@@ -35,3 +38,10 @@ func (h *Heroku) userinfo() *url.Userinfo {
 	return url.UserPassword("", h.ApiKey)
 }
 
+func prettyPrint(v interface{}) {
+	b, err := json.MarshalIndent(v, "", "\t")
+	if err != nil {
+		log.Panic(err)
+	}
+	log.Println("\n" + string(b))
+}
