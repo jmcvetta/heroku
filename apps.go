@@ -5,6 +5,7 @@
 package heroku
 
 import (
+	"encoding/json"
 	"github.com/jmcvetta/restclient"
 	"log"
 )
@@ -13,16 +14,31 @@ import (
 type App struct {
 	Id                int64  `json:"id"`
 	Name              string `json:"name"`
-	CreateStatus      string `json:"create_status"`
-	CreatedAt         string `json:"created_at"`
-	Stack             string `json:"stack"`
-	RequestedStack    string `json:"requested_stack"`
-	RepoMigrateStatus string `json:"repo_migrate_status"`
-	SlugSize          int    `json:"slug_size"`
-	RepoSize          int    `json:"repo_size"`
 	Dynos             int    `json:"dynos"`
 	Workers           int    `json:"workers"`
-	h                 *Heroku
+	RepoSize          int    `json:"repo_size"`
+	SlugSize          int    `json:"slug_size"`
+	Stack             string `json:"stack"`
+	RequestedStack    string `json:"requested_stack"`
+	CreateStatus      string `json:"create_status"`
+	RepoMigrateStatus string `json:"repo_migrate_status"`
+	OwnerEmail        string `json:"owner_email"`
+	OwnerName         string `json:"owner_name"`
+	DomainName        struct {
+		Id         *json.RawMessage `json:"id"`
+		AppId      int64            `json:"app_id"`
+		Domain     string           `json:"domain"`
+		BaseDomain string           `json:"base_domain"`
+		CreatedAt  string           `json:"created_at"`
+		UpdatedAt  string           `json:"updated_at"`
+	} `json:"domain_name"`
+	WebUrl    string `json:"web_url"`
+	GitUrl    string `json:"git_url"`
+	Tier      string `json:"tier"`
+	Region    string `json:"region"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	h         *Heroku
 }
 
 type mapApp struct {

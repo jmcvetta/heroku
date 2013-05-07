@@ -5,38 +5,30 @@
 package heroku
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/jmcvetta/restclient"
 	"log"
 )
 
-/*
-HTTP/1.1 200 OK
-[
-  {
-    "name": "example:basic",
-    "description": "Example Basic",
-    "url": "http://devcenter.heroku.com/articles/example-basic",
-    "state": "public",
-    "beta": false,
-  }
-]
-
-HTTP/1.1 200 OK
-{
-  "status": "Installed",
-  "message": null,
-  "price": "free"
-}
-*/
-
 type Addon struct {
 	Name        string
 	Description string
 	Url         string
-	State       string
 	Beta        bool
-	Configured  bool
+	State       string
+	Attachable  *json.RawMessage
+	Price       struct {
+		Cents int
+		Unit  string
+	}
+	Slug             *json.RawMessage
+	Tos              *json.RawMessage `json:"terms_of_service"`
+	DynoHours        *json.RawMessage `json:"consumes_dyno_hours"`
+	PlanDescription  string           `json:"plan_description"`
+	GropuDescription string           `json:"group_description"`
+	Selective        *json.RawMessage
+	Configured       bool
 }
 
 type AddonStatus struct {
