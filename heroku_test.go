@@ -15,10 +15,7 @@ import (
 
 func setup(t *testing.T) *Heroku {
 	log.SetFlags(log.Lshortfile)
-	key := env.StringDefault("HEROKU_TEST_API_KEY", "")
-	if key == "" {
-		t.Fatal("HEROKU_API_KEY environment variable not set")
-	}
+	key := env.String("HEROKU_TEST_API_KEY")
 	h := NewHeroku(key)
 	h.rc.Log = false
 	return h
