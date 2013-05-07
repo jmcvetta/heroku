@@ -46,3 +46,8 @@ func cleanup(t *testing.T, h *Heroku) {
 		}
 	}
 }
+
+func TestPrettyPrint(t *testing.T) {
+	// This test can only fail with a panic
+	prettyPrint(map[string]string{"foo": "bar"})
+}
