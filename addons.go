@@ -35,7 +35,8 @@ type Addon struct {
 	Description string
 	Url         string
 	State       string
-	Beta        string
+	Beta        bool
+	Configured  bool
 }
 
 type AddonStatus struct {
@@ -56,7 +57,7 @@ func (h *Heroku) Addons() ([]*Addon, error) {
 	}
 	status, err := h.rc.Do(&rr)
 	if status != 200 || err != nil {
-		prettyPrint(err)
+		log.Println(err)
 		return nil, err
 	}
 	return res, nil
@@ -76,7 +77,7 @@ func (h *Heroku) InstallAddon(app, addon string) (*AddonStatus, error) {
 	}
 	status, err := h.rc.Do(&rr)
 	if err != nil {
-		prettyPrint(err)
+		log.Println(err)
 		prettyPrint(e)
 		return nil, err
 	}
@@ -101,7 +102,7 @@ func (h *Heroku) AppAddons(app string) ([]*Addon, error) {
 	}
 	status, err := h.rc.Do(&rr)
 	if status != 200 || err != nil {
-		prettyPrint(err)
+		log.Println(err)
 		return nil, err
 	}
 	return res, nil
