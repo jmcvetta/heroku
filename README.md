@@ -1,12 +1,22 @@
 heroku
 ======
 
-Golang client for Heroku API
+[Go](http://golang.org) client for Heroku API
 
 
 # Documentation
 
 See GoDoc for [automatically generated documentation](http://godoc.org/github.com/jmcvetta/heroku).
+
+
+# Note
+
+Heroku's published [API docs](http://api-docs.heroku.com) appear to be
+outdated, as they do **not** accurately describe the response messages returned
+by the API.  It is therefore likely they also do not correctly/fully describe
+the possible requests the API can accept.  We are sailing in uncharted waters
+here...
+
 
 # Status
 
