@@ -17,7 +17,7 @@ func setup(t *testing.T) *Heroku {
 	log.SetFlags(log.Lshortfile)
 	key := env.String("HEROKU_TEST_API_KEY")
 	h := NewHeroku(key)
-	h.rc.Log = true
+	h.rc.Log = false
 	return h
 }
 

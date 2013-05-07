@@ -5,39 +5,39 @@
 package heroku
 
 import (
-	"encoding/json"
 	"github.com/jmcvetta/restclient"
 	"log"
 )
 
 // An App is a Heroku application.
 type App struct {
-	Id                int64  `json:"id"`
-	Name              string `json:"name"`
-	Dynos             int    `json:"dynos"`
-	Workers           int    `json:"workers"`
-	RepoSize          int    `json:"repo_size"`
-	SlugSize          int    `json:"slug_size"`
-	Stack             string `json:"stack"`
-	RequestedStack    string `json:"requested_stack"`
-	CreateStatus      string `json:"create_status"`
-	RepoMigrateStatus string `json:"repo_migrate_status"`
-	OwnerEmail        string `json:"owner_email"`
-	OwnerName         string `json:"owner_name"`
-	DomainName        struct {
-		Id         *json.RawMessage `json:"id"`
-		AppId      int64            `json:"app_id"`
-		Domain     string           `json:"domain"`
-		BaseDomain string           `json:"base_domain"`
-		CreatedAt  string           `json:"created_at"`
-		UpdatedAt  string           `json:"updated_at"`
+	Id                int64
+	Name              string
+	Dynos             *int
+	Workers           *int
+	RepoSize          *int `json:"repo_size"`
+	SlugSize          *int `json:"slug_size"`
+	Stack             *string
+	RequestedStack    *string `json:"requested_stack"`
+	CreateStatus      *string `json:"create_status"`
+	RepoMigrateStatus *string `json:"repo_migrate_status"`
+	OwnerEmail        *string `json:"owner_email"`
+	OwnerName         *string `json:"owner_name"`
+	DomainName        *struct {
+		Id         *int64
+		AppId      *int64 `json:"app_id"`
+		Domain     *string
+		BaseDomain *string `json:"base_domain"`
+		Default    *bool
+		CreatedAt  *string `json:"created_at"`
+		UpdatedAt  *string `json:"updated_at"`
 	} `json:"domain_name"`
-	WebUrl    string `json:"web_url"`
-	GitUrl    string `json:"git_url"`
-	Tier      string `json:"tier"`
-	Region    string `json:"region"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	WebUrl    *string `json:"web_url"`
+	GitUrl    *string `json:"git_url"`
+	Tier      *string
+	Region    *string
+	CreatedAt *string `json:"created_at"`
+	UpdatedAt *string `json:"updated_at"`
 	h         *Heroku
 }
 

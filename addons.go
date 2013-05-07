@@ -13,22 +13,22 @@ import (
 
 type Addon struct {
 	Name        string
-	Description string
-	Url         string
-	Beta        bool
-	State       string
+	Description *string
+	Url         *string
+	Beta        *bool
+	State       *string
 	Attachable  *json.RawMessage
-	Price       struct {
+	Price       *struct {
 		Cents int
 		Unit  string
 	}
-	Slug             *json.RawMessage
-	Tos              *json.RawMessage `json:"terms_of_service"`
-	DynoHours        *json.RawMessage `json:"consumes_dyno_hours"`
-	PlanDescription  string           `json:"plan_description"`
-	GropuDescription string           `json:"group_description"`
+	Slug             *string
+	Tos              *bool   `json:"terms_of_service"`
+	DynoHours        *bool   `json:"consumes_dyno_hours"`
+	PlanDescription  *string `json:"plan_description"`
+	GroupDescription *string `json:"group_description"`
 	Selective        *json.RawMessage
-	Configured       bool
+	Configured       *bool
 }
 
 type AddonStatus struct {
