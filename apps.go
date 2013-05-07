@@ -11,17 +11,17 @@ import (
 
 // An App is a Heroku application.
 type App struct {
-	Id                int64
-	Name              string
+	Id                int64  `json:"id"`
+	Name              string `json:"name"`
 	CreateStatus      string `json:"create_status"`
 	CreatedAt         string `json:"created_at"`
-	Stack             string
+	Stack             string `json:"stack"`
 	RequestedStack    string `json:"requested_stack"`
 	RepoMigrateStatus string `json:"repo_migrate_status"`
 	SlugSize          int    `json:"slug_size"`
 	RepoSize          int    `json:"repo_size"`
-	Dynos             int
-	Workers           int
+	Dynos             int    `json:"dynos"`
+	Workers           int    `json:"workers"`
 	h                 *Heroku
 }
 
